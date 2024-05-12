@@ -4,11 +4,11 @@ import { Link2Icon, ArchiveIcon } from "@radix-ui/react-icons";
 import { useNavigate } from "react-router-dom";
 import { getUrlPath } from "@/lib/url";
 import { Button } from "./ui/button";
-import { RouteProps } from "@/typings/navigation/articleMenu";
+import { IRouteProps } from "@/typings/route/types";
 
 type Props = {};
 
-export const menuLinks: RouteProps[] = [
+export const menuLinks: IRouteProps[] = [
   { name: "Saves", href: "/saves", icon: Link2Icon },
   { name: "Archives", href: "/archives", icon: ArchiveIcon },
   { name: "Tags", href: "/tags", icon: TagIcon },

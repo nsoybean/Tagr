@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
-import { ThemeProvider } from "./components/theme-provider.tsx";
+import { ThemeProvider } from "./components/ThemeProvider.tsx";
 import {
   THEME_PROVIDER_STORAGE_KEY,
   VIEW_ARTICLE_MODE_PROVIDER_STORAGE_KEY,

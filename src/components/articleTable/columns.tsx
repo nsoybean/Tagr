@@ -1,4 +1,4 @@
-import { Article } from "@/typings/article/Article";
+import { IArticle } from "@/typings/article/types";
 import { ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";
 
@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 // accessorKey: The key to access the data in the data object.
 // header: top cell of table
 // cell: data cell
-export const ArticleColumns: ColumnDef<Article>[] = [
+export const ArticleColumns: ColumnDef<IArticle>[] = [
   {
     accessorKey: "title",
     header: () => <div className="text-default font-bold">Title</div>,

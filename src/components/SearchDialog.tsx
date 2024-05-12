@@ -14,7 +14,7 @@ import { ISearchArticle } from "@/typings/search/articles";
 import { Input } from "./ui/input";
 import { useDebouncedCallback } from "use-debounce";
 import { Skeleton } from "./ui/skeleton";
-import { ArticleStateEnum } from "@/typings/article/Article";
+import { ArticleStateEnum } from "@/typings/article/types";
 import { search } from "@/api/articles";
 import useAuth from "@/hooks/useAuth";
 import { getFallbackName } from "@/lib/auth";

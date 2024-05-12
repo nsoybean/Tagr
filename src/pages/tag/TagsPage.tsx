@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { getAllTags } from "@/api/tags";
-import { Tag as ITag } from "@/typings/tag/Tag";
+import { ITag } from "@/typings/tag/types";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { search } from "fast-fuzzy";

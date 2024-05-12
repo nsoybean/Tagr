@@ -1,4 +1,4 @@
-export interface RouteProps {
+export interface IRouteProps {
   name: string;
   href: string;
   icon: any;

@@ -1,6 +1,5 @@
+import { AuthStateEnum, CustomizationOptions } from "@/typings/auth/types";
 import Auth from "./Auth";
-import { type CustomizationOptions } from "@/typings/user/Auth";
-import { State } from "@/typings/user/Auth";
 
 export function LoginForm({
   appearance,
@@ -12,7 +11,7 @@ export function LoginForm({
       appearance={appearance}
       logo={logo}
       socialLayout={socialLayout}
-      state={State.Login}
+      state={AuthStateEnum.Login}
     />
   );
 }

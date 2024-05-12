@@ -1,13 +1,13 @@
 import { Routes, Route, BrowserRouter } from "react-router-dom";
 import LandingPage from "./pages/landing/LandingPage";
 import App from "./App";
-import Login from "./pages/auth/Login";
-import Saves from "./pages/saves/Saves";
-import Archives from "./pages/saves/Archives";
+import Login from "./pages/auth/LoginPage";
+import Saves from "./pages/saves/SavesPage";
+import Archives from "./pages/saves/ArchivesPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import AccountPage from "./pages/auth/AccountPage";
-import Tag from "./pages/tag";
-import TagSaves from "./pages/tag/Saves";
+import Tag from "./pages/tag/TagsPage";
+import TagSaves from "./pages/tag/SearchByTagPage";
 
 // import PricingPage from "./pages/pricing/Pricing";
 // import App from "./App";

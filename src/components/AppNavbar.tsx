@@ -19,7 +19,7 @@ import useAuth from "@/hooks/useAuth";
 import appIcon from "/appIcon.png";
 import { UserDropdownMenu } from "./UserDropdownMenu";
 import { SaveArticleInput } from "./SaveArticleInput";
-import { RouteProps } from "@/typings/navigation/articleMenu";
+import { IRouteProps } from "@/typings/route/types";
 import {
   Link2Icon,
   MagnifyingGlassIcon,
@@ -31,13 +31,13 @@ import SearchDialog from "./SearchDialog";
 
 const LogoIcon = () => <img className="h-8 w-8" src={appIcon} alt="Yetti.ai" />;
 
-export const mobileMenu: RouteProps[] = [
+export const mobileMenu: IRouteProps[] = [
   { name: "Saves", href: "/saves", icon: Link2Icon },
   { name: "Archives", href: "/archives", icon: ArchiveIcon },
   { name: "Tags", href: "/tags", icon: TagIcon },
 ];
 
-export const desktopMenu: RouteProps[] = [];
+export const desktopMenu: IRouteProps[] = [];
 
 export const AppNavbar = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);

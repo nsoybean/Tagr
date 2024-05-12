@@ -1,4 +1,4 @@
-import { Article as IArticle } from "@/typings/article/Article";
+import { Article as IArticle } from "@/typings/article/types";
 import {
   Card,
   CardContent,
@@ -14,7 +14,7 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import randomColor from "randomcolor";
 import { useNavigate } from "react-router-dom";
-import { useTheme } from "./theme-provider";
+import { useTheme } from "./ThemeProvider";
 import { routes } from "@/router";
 
 type Props = {

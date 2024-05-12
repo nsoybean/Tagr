@@ -1,5 +1,5 @@
 import api from "@/configs/api";
-import { Tag } from "@/typings/tag/Tag";
+import { Tag } from "@/typings/tag/types";
 
 export async function getAllTags(
   page = 1,

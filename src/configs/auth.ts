@@ -1,6 +1,6 @@
 import { apiEventsEmitter } from "@/events/events";
 import { storage } from "@/lib/storage";
-import { User } from "@/typings/user/User";
+import { User } from "@/typings/user/types";
 
 export const APP_AUTH_TOKEN_NAME = "authToken";
 export const APP_AUTH_USER_NAME = "authUser";

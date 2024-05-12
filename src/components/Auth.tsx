@@ -6,7 +6,7 @@ import {
   type State,
   type CustomizationOptions,
   type ErrorMessage,
-} from "@/typings/user/Auth";
+} from "@/typings/auth/Auth";
 import LoginSignupForm from "./LoginSignupForm";
 
 // import { LoginSignupForm } from "./internal/common/LoginSignupForm";
@@ -64,20 +64,20 @@ function Auth({
     <div className="flex flex-col items-center">
       <div>
         {logo && <img height={"3rem"} src={logo} alt="Your Company" />}
-        <div className="text-4xl font-bold text-gray-900 sm:text-3xl my-2">
+        <div className="my-2 text-4xl font-bold text-gray-900 sm:text-3xl">
           {title}
         </div>
       </div>
 
       {errorMessage && (
-        <p className="mt-2 text-md leading-8 text-red-600">
+        <p className="text-md mt-2 leading-8 text-red-600">
           {errorMessage.title}
           {errorMessage.description && ": "}
           {errorMessage.description}
         </p>
       )}
       {successMessage && (
-        <p className="mt-2 text-md leading-8">{successMessage}</p>
+        <p className="text-md mt-2 leading-8">{successMessage}</p>
       )}
       <AuthContext.Provider
         value={{ isLoading, setIsLoading, setErrorMessage, setSuccessMessage }}

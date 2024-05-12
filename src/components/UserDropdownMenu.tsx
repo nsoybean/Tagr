@@ -8,11 +8,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { User } from "@/typings/user/User";
+import { User } from "@/typings/user/types";
 import useLogout from "@/hooks/useLogout";
 import { useQueryClient } from "@tanstack/react-query";
 import { Switch } from "./ui/switch";
-import { useTheme } from "./theme-provider";
+import { useTheme } from "./ThemeProvider";
 import { useNavigate } from "react-router-dom";
 import { LayoutDashboardIcon, ListIcon } from "lucide-react";
 import { useViewArticleMode } from "@/hooks/useArticleViewMode";

@@ -1,4 +1,4 @@
-import { AuthUser, User } from "../typings/user/User";
+import { AuthUser, User } from "../typings/user/types";
 
 export function parseAuthFromRedirectUrl(hashUrl: string): AuthUser {
   const parsedToken = parseTokenFromUrl(hashUrl);

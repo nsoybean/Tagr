@@ -1,5 +1,5 @@
 import api from "@/configs/api";
-import { Article } from "../typings/article/Article";
+import { Article } from "../typings/article/types";
 import { ISearchArticle } from "@/typings/search/articles";
 
 export async function addArticle({ link }: { link: string }): Promise<{

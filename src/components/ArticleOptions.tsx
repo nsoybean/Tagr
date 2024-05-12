@@ -23,7 +23,7 @@ import {
   updateArticleMetaById,
 } from "@/api/articles";
 import toast from "react-hot-toast";
-import { Article } from "@/typings/article/Article";
+import { Article } from "@/typings/article/types";
 import { useEffect, useRef, useState } from "react";
 import ConfirmationDialog from "./Dialog";
 import {

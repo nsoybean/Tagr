@@ -1,4 +1,4 @@
-export interface User {
+export interface IUser {
   username: string;
   email?: string;
   firstName?: string;
@@ -10,7 +10,7 @@ export interface User {
   lastActiveTimestamp?: number;
 }
 
-export interface AuthUser {
+export interface IAuthRedirectUser {
   email?: string;
   accessToken?: string;
   tokenType?: string;

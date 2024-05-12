@@ -1,4 +1,4 @@
-import { Article as IArticle } from "@/typings/article/Article";
+import { Article as IArticle } from "@/typings/article/types";
 import {
   Card,
   CardContent,

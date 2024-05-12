@@ -1,6 +1,6 @@
-import { Tag } from "../tag/Tag";
+import { ITag } from "../tag/types";
 
-export interface Article {
+export interface IArticle {
   link: string;
   description: string;
   state: string;
@@ -12,11 +12,21 @@ export interface Article {
   domain: string;
   updatedAt: Date;
   createdAt: Date;
-  tagIds: Tag[];
+  tagIds: ITag[];
 }
 
 export enum ArticleStateEnum {
   AVAILABLE = "AVAILABLE",
   ARCHIVED = "ARCHIVED",
   DELETED = "DELETED",
+}
+
+// Search
+export interface ISearchArticleResult {
+  id: string;
+  title: string;
+  link: string;
+  description: string;
+  state: string;
+  createdAt: Date;
 }
