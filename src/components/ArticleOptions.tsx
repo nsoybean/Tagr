@@ -10,22 +10,14 @@ import {
   CopyIcon,
   Cross2Icon,
   Pencil1Icon,
-  DotsHorizontalIcon,
+  ArchiveIcon,
 } from "@radix-ui/react-icons";
 import { Button } from "./ui/button";
-import {
-  ChevronRight,
-  FolderIcon,
-  FolderInputIcon,
-  PlusIcon,
-  TagIcon,
-  TrashIcon,
-} from "lucide-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { DeleteIcon, PlusIcon, TagIcon, TrashIcon } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   archiveArticle,
   deleteArticle,
-  moveBookmarksToFolder,
   tagArticle,
   unarchiveArticle,
   updateArticleMetaById,
@@ -48,11 +40,6 @@ import { Label } from "@radix-ui/react-dropdown-menu";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
 import { AxiosError } from "axios";
-import { Separator } from "./ui/separator";
-import { getNestedFoldersById } from "@/api/folders";
-import { useFolder } from "@/hooks/FolderProvider";
-import { Skeleton } from "./ui/skeleton";
-import { Folder } from "@/typings/folder/type";
 
 type Props = {
   article: Article;
@@ -83,8 +70,6 @@ const ArticleOptions = ({ article }: Props) => {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [tagDialogOpen, setTagDialogOpen] = useState<boolean>(false);
   const [renameDialogOpen, setRenameDialogOpen] = useState<boolean>(false);
-  const [moveFilesDialogOpen, setMoveFilesDialogOpen] =
-    useState<boolean>(false);
   const [currToast, setCurrToast] = useState("");
   const [tagList, setTagList] = useState<string[]>([]);
   const queryClient = useQueryClient();
@@ -92,18 +77,6 @@ const ArticleOptions = ({ article }: Props) => {
   const [articleMetaData, setArticleMetaData] = useState<{
     title: string;
   } | null>(null);
-  const [moveFolderCurrId, setMoveFolderCurrId] = useState<string | null>(null);
-  const [isGetNestedFolderLoading, setIsGetgetNestedFolderLoading] =
-    useState(false);
-  const [nestedFolders, setNestedFolders] = useState<Folder[]>([]);
-  const [parentFoldersHierarchy, setParentFoldersHierarchy] = useState<{
-    maxDepthLookupReached: boolean;
-    list: { _id: string; name: string }[];
-  } | null>(null);
-
-  const [selectedBookmarks, setSelectedBookmarks] = useState<string[]>([]);
-
-  const { folder: currFolderId } = useFolder();
 
   // copy of original tags
   let originalTags: string[] = [];
@@ -118,35 +91,6 @@ const ArticleOptions = ({ article }: Props) => {
     }
   }, [tagDialogOpen]);
 
-  /**
-   * if move folder is set
-   */
-  useEffect(() => {
-    if (moveFolderCurrId) {
-      navigateMoveFolderDir(moveFolderCurrId);
-    }
-  }, [moveFolderCurrId]);
-
-  async function navigateMoveFolderDir(folderId: string) {
-    try {
-      setIsGetgetNestedFolderLoading(true);
-      const res = await getNestedFoldersById({ id: folderId });
-
-      if (res.folders) {
-        setNestedFolders(res.folders.data);
-      }
-
-      if (res.parentFolderHierarchy) {
-        setParentFoldersHierarchy(res.parentFolderHierarchy);
-      } else if (folderId === "root") {
-        setParentFoldersHierarchy(null);
-      }
-    } catch (error) {
-      toast.error("Failed to get folder data. Please try again.");
-    } finally {
-      setIsGetgetNestedFolderLoading(false);
-    }
-  }
   // delete article
   const { mutate: deleteArticleById } = useMutation({
     mutationFn: deleteArticle,
@@ -161,25 +105,6 @@ const ArticleOptions = ({ article }: Props) => {
         queryClient.invalidateQueries({
           queryKey: ["get-all-archived-articles"],
         });
-      }
-    },
-    onError: (error) => {
-      toast.dismiss(currToast);
-      toast.error(`Error!`);
-    },
-    onSettled: () => {},
-  });
-
-  // move article
-  const { mutate: moveArticlesToFolder } = useMutation({
-    mutationFn: moveBookmarksToFolder,
-    onSuccess: (data) => {
-      toast.dismiss(currToast);
-      toast.success("Successfully moved!");
-
-      // invalidate query
-      if (article.state === "AVAILABLE") {
-        queryClient.invalidateQueries({ queryKey: ["get-all-articles"] });
       }
     },
     onError: (error) => {
@@ -310,12 +235,9 @@ const ArticleOptions = ({ article }: Props) => {
 
   async function toggleRenameDialog() {
     setRenameDialogOpen((prev) => !prev);
-  }
-
-  async function toggleMoveFilesDialog() {
-    setMoveFilesDialogOpen((prev) => !prev);
-    // reset
-    setMoveFolderCurrId(null);
+    // if (tagInputRef.current) {
+    //   tagInputRef.current.value = "";
+    // }
   }
 
   function upsertTagValue(tag: string) {
@@ -354,156 +276,29 @@ const ArticleOptions = ({ article }: Props) => {
     setTagList(newTagList);
   }
 
-  function renderFolderHierarchyBreadCrumb({
-    parentFolderHierarchy,
-  }: {
-    parentFolderHierarchy: {
-      maxDepthLookupReached: boolean;
-      list: {
-        _id: string;
-        name: string;
-      }[];
-    };
-  }) {
-    let reversedParentToChildFolder: {
-      _id: string;
-      name: string;
-    }[] = parentFolderHierarchy.list.map(
-      (item, idx) =>
-        parentFolderHierarchy.list[parentFolderHierarchy.list.length - 1 - idx],
-    );
-
-    // is loading
-    if (isGetNestedFolderLoading) {
-      return (
-        <div className="flex flex-col items-start gap-2">
-          <Skeleton className="h-4 w-[200px]" />
-        </div>
-      );
-    }
-
-    // case 1. if less than 2 levels, render all
-    // saves > folder_1 > folder_2
-    if (reversedParentToChildFolder.length <= 2) {
-      return (
-        <div className="flex flex-row items-center gap-2">
-          <div
-            className={`rounded-md px-2 py-1 text-sm font-medium ${moveFolderCurrId !== "root" && "opacity-50 hover:cursor-pointer hover:underline"}`}
-            onClick={() => {
-              setMoveFolderCurrId("root"); // root
-            }}
-          >
-            Saves
-          </div>
-          {reversedParentToChildFolder.map((folder, index) => {
-            return (
-              <div key={index} className="flex flex-row items-center">
-                <ChevronRight />
-                <span
-                  className={`rounded-md px-2 py-1 text-sm font-medium ${moveFolderCurrId !== folder._id && "opacity-50 hover:cursor-pointer hover:underline"}`}
-                  onClick={() => {
-                    setMoveFolderCurrId(folder._id);
-                  }}
-                >
-                  {folder.name}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      );
-    } else if (reversedParentToChildFolder.length > 2) {
-      // case 2: if more than 2 levels and max depth not reached, render dropdown with last 2
-      // ... > folder_2 > folder_3
-      let ellipseList = reversedParentToChildFolder.slice(0, -2); // first to third last element
-      let shownList = reversedParentToChildFolder.slice(-2); // last 2 element
-      return (
-        <div className="flex flex-row items-center gap-2">
-          <div className="text-sm font-medium">
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <div className="rounded-full p-2 hover:cursor-pointer hover:bg-accent">
-                  <DotsHorizontalIcon height={18} width={18} />
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-[200px]">
-                <DropdownMenuGroup>
-                  {/* fixed (/saves) */}
-                  <DropdownMenuItem
-                    className="gap-2"
-                    onSelect={(e) => e.preventDefault()}
-                    onClick={() => {
-                      setMoveFolderCurrId("root");
-                    }}
-                  >
-                    <FolderIcon width={18} height={18} />
-                    Saves
-                  </DropdownMenuItem>
-                  {/* if hit max depth */}
-                  {parentFolderHierarchy.maxDepthLookupReached && (
-                    <DropdownMenuItem
-                      disabled={true}
-                      className="gap-2"
-                      onSelect={(e) => e.preventDefault()}
-                    >
-                      <DotsVerticalIcon width={18} height={18} />
-                    </DropdownMenuItem>
-                  )}
-
-                  {/* case 3: if more than 2 levels and max depth reached, render collapse ellipse within dropdown */}
-                  {ellipseList.map((folder, index) => {
-                    return (
-                      <DropdownMenuItem
-                        key={index}
-                        className="gap-2"
-                        onSelect={(e) => e.preventDefault()}
-                        onClick={() => {
-                          setMoveFolderCurrId(folder._id);
-                        }}
-                      >
-                        <FolderIcon width={18} height={18} />
-                        {folder.name}
-                      </DropdownMenuItem>
-                    );
-                  })}
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          {shownList.map((folder, index) => {
-            return (
-              <div key={index} className="flex flex-row items-center">
-                <ChevronRight />
-                <span
-                  className={`rounded-md px-2 py-1 text-sm font-medium ${moveFolderCurrId !== folder._id && "opacity-50 hover:cursor-pointer hover:underline"}`}
-                  onClick={() => {
-                    setMoveFolderCurrId(folder._id);
-                  }}
-                >
-                  {folder.name}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      );
-    }
-
-    // base
-    <div className="ml-2 text-sm font-medium"> Saves </div>;
-  }
-
   return (
     <>
-      {/* setting modal=false, prevent drop down from remaining open */}
+      {/* setting modal to false, prevent drop down from remaining open */}
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="h-full">
             <DotsVerticalIcon width={"18"} height={"18"} />
           </Button>
+          {/* <Button variant="outline" className="">
+            <span>Options</span>
+          </Button> */}
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[200px]">
           <DropdownMenuGroup>
+            <DropdownMenuItem
+              className="text-red-600"
+              onSelect={(e) => e.preventDefault()}
+              onClick={() => setOpenDialog(true)}
+            >
+              <TrashIcon width={"18"} height={"18"} className="mr-2" />
+              Delete
+              {/* <DropdownMenuShortcut>⌘ ⌫</DropdownMenuShortcut> */}
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => copyTextToClipboard(article.link)}>
               <CopyIcon width={"18"} height={"18"} className="mr-2" /> Copy link
             </DropdownMenuItem>
@@ -512,33 +307,11 @@ const ArticleOptions = ({ article }: Props) => {
                 <TagIcon width={"18"} height={"18"} className="mr-2" /> Tag
               </DropdownMenuItem>
             )}
-
-            <DropdownMenuItem
-              onSelect={(e) => e.preventDefault()}
-              onClick={() => {
-                toggleMoveFilesDialog();
-
-                // update useState array
-                setSelectedBookmarks((prev) => [...prev, ...[article._id]]);
-                setMoveFolderCurrId(currFolderId);
-              }}
-            >
-              <FolderInputIcon width={"18"} height={"18"} className="mr-2" />
-              Move
-            </DropdownMenuItem>
             <DropdownMenuItem
               onSelect={(e) => e.preventDefault()}
               onClick={() => toggleRenameDialog()}
             >
               <Pencil1Icon width={"18"} height={"18"} className="mr-2" /> Rename
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-red-600"
-              onSelect={(e) => e.preventDefault()}
-              onClick={() => setOpenDialog(true)}
-            >
-              <TrashIcon width={"18"} height={"18"} className="mr-2" />
-              Delete
             </DropdownMenuItem>
             {/* temp commented out archive feature */}
             {/* <DropdownMenuItem
@@ -700,105 +473,6 @@ const ArticleOptions = ({ article }: Props) => {
                 Save
               </Button>
             </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* move files dialog */}
-      <Dialog onOpenChange={toggleMoveFilesDialog} open={moveFilesDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Move item</DialogTitle>
-            <DialogDescription>Select a destination folder</DialogDescription>
-          </DialogHeader>
-
-          {/* folders list */}
-          {/* <Separator /> */}
-          <div className="border-t border-gray-300"></div>
-
-          {/* main */}
-          <div className="flex h-28 w-full flex-col overflow-y-auto">
-            {/* loading */}
-            {isGetNestedFolderLoading && (
-              <div className="flex flex-col items-start gap-2">
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-4 w-[200px]" />
-              </div>
-            )}
-
-            {/* show nested folders */}
-            {!isGetNestedFolderLoading &&
-              nestedFolders &&
-              nestedFolders.length > 0 && (
-                <div className="flex w-full flex-col items-start gap-2">
-                  {nestedFolders.map((folder) => {
-                    // hide current folder
-                    if (folder._id === moveFolderCurrId) {
-                      return;
-                    }
-
-                    return (
-                      <div
-                        key={folder._id}
-                        className="flex w-full items-center gap-2 rounded-md px-2 py-1 hover:bg-accent hover:text-accent-foreground"
-                        onClick={() => {
-                          setMoveFolderCurrId(folder._id);
-                        }}
-                      >
-                        <FolderIcon width={18} height={18} />
-                        <p className="max-w-36 truncate">{folder.name}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-            {/* empty message */}
-            {!isGetNestedFolderLoading &&
-              (nestedFolders.length === 0 ||
-                (nestedFolders?.length === 1 &&
-                  nestedFolders[0]?._id === moveFolderCurrId)) && (
-                <div className="opacity-50">No folders available.</div>
-              )}
-          </div>
-
-          {/* folder hierarchy breadcrumb */}
-          {parentFoldersHierarchy &&
-            renderFolderHierarchyBreadCrumb({
-              parentFolderHierarchy: parentFoldersHierarchy,
-            })}
-
-          <DialogFooter className="sm:justify-end">
-            <DialogClose asChild onChange={() => console.log("changing")}>
-              <Button type="button" variant={"ghost"}>
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button
-              type="button"
-              variant={"default"}
-              isLoading={isGetNestedFolderLoading}
-              disabled={
-                currFolderId === moveFolderCurrId || isGetNestedFolderLoading
-                  ? true
-                  : false
-              }
-              onClick={() => {
-                if (!moveFolderCurrId) {
-                  return;
-                } else {
-                  const toastId = toast.loading("Moving links...");
-                  setCurrToast(toastId);
-                  moveArticlesToFolder({
-                    bookmarkIds: selectedBookmarks,
-                    folderId: moveFolderCurrId,
-                  });
-                  toggleMoveFilesDialog();
-                }
-              }}
-            >
-              Move here
-            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

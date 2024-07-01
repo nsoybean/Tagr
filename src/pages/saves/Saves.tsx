@@ -44,6 +44,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import FolderHierarchyBreadCrumb from "@/components/FolderHierarchyBreadCrumb";
+import { DndContext, DragEndEvent } from "@dnd-kit/core";
+
 // import { DataTable } from "@/components/articleTable/data-table";
 // import { ArticleColumns } from "@/components/articleTable/columns";
 
@@ -59,6 +61,7 @@ const Saves = ({ state: articleState = ArticleStateEnum.AVAILABLE }: Props) => {
   const { logout } = useLogout();
   const { folderId } = useParams();
   const { setFolder } = useFolder();
+  const [dropParentFolder, setDropParentFolder] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // update folder id context
@@ -102,6 +105,12 @@ const Saves = ({ state: articleState = ArticleStateEnum.AVAILABLE }: Props) => {
       logout();
     }
   }, []);
+
+  useEffect(() => {
+    if (dropParentFolder) {
+      console.log("🚀 dropParentFolder:", dropParentFolder);
+    }
+  }, [dropParentFolder]);
 
   // scroll to top of page every page change
   useEffect(() => {
@@ -176,115 +185,131 @@ const Saves = ({ state: articleState = ArticleStateEnum.AVAILABLE }: Props) => {
     );
   }
 
+  function handleDragEnd(event: DragEndEvent) {
+    const { over } = event;
+
+    if (!over) {
+      return null;
+    }
+
+    // move link into folder
+    // TODO @sb: enable move folder too
+
+    const linkId = event.active.id;
+    // const targetFolderId =
+    setDropParentFolder(event.over ? (event.over.id as string) : null);
+  }
+
   return (
     // main
-    <main className="mx-auto w-full">
-      <div className="flex flex-col gap-3">
-        {/* header */}
-        <div className="mt-2 flex flex-row items-center justify-between">
-          {articles?.parentFolderHierarchy ? (
-            <FolderHierarchyBreadCrumb
-              parentFolderHierarchy={articles?.parentFolderHierarchy}
+    <DndContext onDragEnd={handleDragEnd}>
+      <main className="mx-auto w-full">
+        <div className="flex flex-col gap-3">
+          {/* header */}
+          <div className="mt-2 flex flex-row items-center justify-between">
+            {articles?.parentFolderHierarchy ? (
+              <FolderHierarchyBreadCrumb
+                parentFolderHierarchy={articles?.parentFolderHierarchy}
+              />
+            ) : (
+              // base, no hierarchy
+              <div className="ml-2 text-xl font-semibold"> Saves </div>
+            )}
+            <AddNew
+              trigger={
+                <Button variant="outline">
+                  <PlusIcon className="mr-2 h-4 w-4" />
+                  New
+                </Button>
+              }
             />
-          ) : (
-            // base, no hierarchy
-            <div className="ml-2 text-xl font-semibold"> Saves </div>
-          )}
-          <AddNew
-            trigger={
-              <Button variant="outline">
-                <PlusIcon className="mr-2 h-4 w-4" />
-                New
-              </Button>
-            }
-          />
-        </div>
+          </div>
 
-        {/* divider */}
-        <Separator />
+          {/* divider */}
+          <Separator />
 
-        {/* content (gallery mode) */}
-        {mode === "gallery" && (
-          <div className="">
-            {/* is loading */}
-            {isLoading && (
-              <div className="mb-12 flex flex-col gap-2">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  <ArticleSkeleton numCards={6} />
-                </div>
-              </div>
-            )}
-
-            {/* folder */}
-            {filteredFolders.length > 0 && (
-              <div className="mb-8 mt-1">
-                <h2 className="mb-1 ml-2"> Folders </h2>
-                <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
-                  <Folders folders={filteredFolders} />
-                </div>
-              </div>
-            )}
-
-            {/* articles */}
-            {articles?.bookmarks?.data &&
-              articles.bookmarks.data.length > 0 && (
-                <div className="">
-                  <h2 className="mb-1 ml-2"> Links </h2>
+          {/* content (gallery mode) */}
+          {mode === "gallery" && (
+            <div className="">
+              {/* is loading */}
+              {isLoading && (
+                <div className="mb-12 flex flex-col gap-2">
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <Articles articles={articles.bookmarks.data} />
+                    <ArticleSkeleton numCards={6} />
                   </div>
                 </div>
               )}
 
-            {/* articles (empty state) */}
-            {articles?.bookmarks?.data &&
-              articles.bookmarks.total_records === 0 &&
-              renderEmptyArticlesState()}
-          </div>
-        )}
-
-        {/* content (list mode) */}
-        {mode === "list" && (
-          <div className="">
-            {/* is loading */}
-            {isLoading && <ArticleSkeletonList numCards={5} />}
-
-            {/* folder */}
-            {filteredFolders.length > 0 && (
-              <div className="mb-8 mt-1">
-                <h2 className="ml-2 font-bold"> Folders </h2>
-                <Folders folders={filteredFolders} />
-              </div>
-            )}
-
-            {/* articles */}
-            {articles?.bookmarks?.data &&
-              articles.bookmarks.data.length > 0 && (
-                <div className="">
-                  <h2 className="ml-2 font-bold">Links </h2>
-                  <ArticlesList articles={articles.bookmarks.data} />
+              {/* folder */}
+              {filteredFolders.length > 0 && (
+                <div className="mb-8 mt-1">
+                  <h2 className="mb-1 ml-2"> Folders </h2>
+                  <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
+                    <Folders folders={filteredFolders} />
+                  </div>
                 </div>
               )}
 
-            {/* articles (empty state) */}
-            {articles?.bookmarks?.data &&
-              articles.bookmarks.total_records === 0 &&
-              renderEmptyArticlesState()}
-          </div>
-        )}
-      </div>
+              {/* articles */}
+              {articles?.bookmarks?.data &&
+                articles.bookmarks.data.length > 0 && (
+                  <div className="">
+                    <h2 className="mb-1 ml-2"> Links </h2>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      <Articles articles={articles.bookmarks.data} />
+                    </div>
+                  </div>
+                )}
 
-      {/* pagination */}
-      <div className="bottom-0 mb-10 mt-12">
-        <ArticlePagination
-          currentPage={currPage}
-          setPage={setCurrPage}
-          recordsPerPage={9}
-          totalRecords={articles?.bookmarks.total_records || 0}
-        />
-      </div>
+              {/* articles (empty state) */}
+              {articles?.bookmarks?.data &&
+                articles.bookmarks.total_records === 0 &&
+                renderEmptyArticlesState()}
+            </div>
+          )}
 
-      {/* {isFolderEllipseOpen && (
+          {/* content (list mode) */}
+          {mode === "list" && (
+            <div className="">
+              {/* is loading */}
+              {isLoading && <ArticleSkeletonList numCards={5} />}
+
+              {/* folder */}
+              {filteredFolders.length > 0 && (
+                <div className="mb-8 mt-1">
+                  <h2 className="ml-2"> Folders </h2>
+                  <Folders folders={filteredFolders} />
+                </div>
+              )}
+
+              {/* articles */}
+              {articles?.bookmarks?.data &&
+                articles.bookmarks.data.length > 0 && (
+                  <div className="">
+                    <h2 className="ml-2">Links </h2>
+                    <ArticlesList articles={articles.bookmarks.data} />
+                  </div>
+                )}
+
+              {/* articles (empty state) */}
+              {articles?.bookmarks?.data &&
+                articles.bookmarks.total_records === 0 &&
+                renderEmptyArticlesState()}
+            </div>
+          )}
+        </div>
+
+        {/* pagination */}
+        <div className="bottom-0 mb-10 mt-12">
+          <ArticlePagination
+            currentPage={currPage}
+            setPage={setCurrPage}
+            recordsPerPage={9}
+            totalRecords={articles?.bookmarks.total_records || 0}
+          />
+        </div>
+
+        {/* {isFolderEllipseOpen && (
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button
@@ -316,7 +341,8 @@ const Saves = ({ state: articleState = ArticleStateEnum.AVAILABLE }: Props) => {
           </DropdownMenuContent>
         </DropdownMenu>
       )} */}
-    </main>
+      </main>
+    </DndContext>
   );
 };
 
